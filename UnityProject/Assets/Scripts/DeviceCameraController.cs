@@ -6,7 +6,7 @@ using System.Collections;
 public class DeviceCameraController : MonoBehaviour
 {
     // Items linked to scene objects
-    public RawImage rawImage;
+    public RawImage webcamRawImage;
     public RectTransform imageParent;
     public AspectRatioFitter imageFitter;
 
@@ -21,8 +21,6 @@ public class DeviceCameraController : MonoBehaviour
 
     // "Camera is initialized" flag
     bool cameraInitialized = false;
-
-    //bool cameraInitialized2 = false;
 
     // Image rotation
     Vector3 rotationVector = new Vector3(0f, 0f, 0f);
@@ -75,8 +73,8 @@ public class DeviceCameraController : MonoBehaviour
         activeCameraTexture = cameraToUse;
         activeCameraDevice = WebCamTexture.devices.FirstOrDefault(device => device.name == cameraToUse.deviceName);
 
-        rawImage.texture = activeCameraTexture;
-        rawImage.material.mainTexture = activeCameraTexture;
+        webcamRawImage.texture = activeCameraTexture;
+        webcamRawImage.material.mainTexture = activeCameraTexture;
 
         activeCameraTexture.Play();
 
@@ -108,14 +106,14 @@ public class DeviceCameraController : MonoBehaviour
 
             // Rotate image to show correct orientation 
             rotationVector.z = -activeCameraTexture.videoRotationAngle;
-            rawImage.rectTransform.localEulerAngles = rotationVector;
+            webcamRawImage.rectTransform.localEulerAngles = rotationVector;
 
             // Set AspectRatioFitter's ratio
             float videoRatio = (float)activeCameraTexture.width / (float)activeCameraTexture.height;
             imageFitter.aspectRatio = videoRatio;
 
             // Unflip if vertically flipped
-            rawImage.uvRect = activeCameraTexture.videoVerticallyMirrored ? fixedRect : defaultRect;
+            webcamRawImage.uvRect = activeCameraTexture.videoVerticallyMirrored ? fixedRect : defaultRect;
 
             // Mirror front-facing camera's image horizontally to look more natural
             if (activeCameraDevice.isFrontFacing ) {
@@ -131,21 +129,26 @@ public class DeviceCameraController : MonoBehaviour
             processedTexture = new Texture2D (activeCameraTexture.width, activeCameraTexture.height);
         }
             
-        // Load this camera frame
+        // Grab the current frame's pixels
         framePixels = activeCameraTexture.GetPixels ();
 
-        // temp variable to hold hue (color wheel), saturation (intensisty), vibrance (whiteness) for each pixel
+        // Temp variables to hold the hue, saturation, vibrance for a HSVcolor.
         float hOrig, sOrig, vOrig, hChanged, sChanged, vChanged;
+        // Temp variables to hold a color in rgb notation
+        Color rgbOrig, rgbChanged;
 
         // Loop through every pixel, row (y) and column (x) in the camera frame
         for (int y = 0; y < activeCameraTexture.width; y++)
         {
             for (int x = 0; x < activeCameraTexture.height; x++)
             {
+                // Get the originalframePixels is a 1D array instead of 2D, so we have to calculate it's 1D index.
+                rgbOrig = framePixels[(y*x) + x];
+
                 // Convert the rgb camera pixel value to HSV for easy comparison to our rules
-                // framePixels is a 1D array instead of 2D, so we have to calculate it's 1D index.
-                Color.RGBToHSV( framePixels[(y*x) + x], hOrig, sOrig, vOrig );
-               
+                Color.RGBToHSV( rgbOrig, out hOrig, out sOrig, out vOrig );
+
+                // Now we change the color values based on our rules
                 if (hOrig > .5) {
                     hChanged = 1;
                 } else {
@@ -164,8 +167,11 @@ public class DeviceCameraController : MonoBehaviour
                     vChanged = vOrig;
                 }
 
+                // Take our changed HSV color and convert it back to RGB so the texture can use it
+                rgbChanged = Color.HSVToRGB (hChanged, sChanged, vChanged);
+
                 // Save the pixel into our processed texture
-                processedTexture.SetPixel (x, y, new Color (Color.HSVToRGB (hChanged, sChanged, vChanged)));
+                processedTexture.SetPixel (x, y, rgbChanged);
             }
         }
 
@@ -173,7 +179,7 @@ public class DeviceCameraController : MonoBehaviour
         processedTexture.Apply ();
 
         // Assign our processed data to the rawImage object on the screen.
-        rawImage = processedTexture;
+        webcamRawImage.texture = processedTexture;
 
     }
         

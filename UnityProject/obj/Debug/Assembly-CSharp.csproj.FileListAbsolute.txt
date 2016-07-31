@@ -61,3 +61,24 @@ C:\Users\Dan\Google Drive\FlappyBird\UnityProjects\FlappyBird\Temp\bin\Debug\Uni
 C:\Users\Dan\Google Drive\FlappyBird\UnityProjects\FlappyBird\Temp\bin\Debug\UnityEditor.xml
 C:\Users\Dan\Google Drive\FlappyBird\UnityProjects\FlappyBird\Temp\bin\Debug\UnityEngine.UI.xml
 C:\Users\Dan\Google Drive\FlappyBird\UnityProjects\FlappyBird\Temp\bin\Debug\UnityEngine.Networking.xml
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\obj\Debug\Assembly-CSharp.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\Assembly-CSharp.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\Assembly-CSharp.pdb
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\UnityEditor.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\UnityEngine.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\UnityEngine.Networking.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\UnityEngine.UI.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\Mono.Cecil.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\Unity.SerializationLogic.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\Unity.DataContract.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\ICSharpCode.NRefactory.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\Unity.UNetWeaver.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\Unity.CecilTools.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\Mono.Cecil.Pdb.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\Mono.Cecil.Mdb.dll
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\UnityEngine.xml
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\UnityEditor.xml
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\UnityEngine.UI.xml
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\Temp\bin\Debug\UnityEngine.Networking.xml
+C:\Users\Dan\Documents\GitHub\FlappyBird\UnityProject\obj\Debug\Assembly-CSharp.pdb

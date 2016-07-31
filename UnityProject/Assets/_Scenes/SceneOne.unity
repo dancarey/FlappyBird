@@ -2534,7 +2534,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc2a4a7aa53a6cf4e854cd6c619ca442, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  image: {fileID: 1032579202}
+  webcamRawImage: {fileID: 1032579202}
   imageParent: {fileID: 423876783}
   imageFitter: {fileID: 1032579204}
 --- !u!114 &1032579202
