@@ -6,181 +6,170 @@ using System.Collections;
 public class DeviceCameraController : MonoBehaviour
 {
     // Items linked to scene objects
-    public RawImage webcamRawImage;
-    public RectTransform imageParent;
+    public RawImage webCamRawImage;
     public AspectRatioFitter imageFitter;
 
-    // Device cameras
-    WebCamDevice frontCameraDevice;
-    WebCamDevice backCameraDevice;
+    // Currently active camera device and texture
     WebCamDevice activeCameraDevice;
-
-    WebCamTexture frontCameraTexture;
-    WebCamTexture backCameraTexture;
     WebCamTexture activeCameraTexture;
-
-    // "Camera is initialized" flag
-    bool cameraInitialized = false;
 
     // Image rotation
     Vector3 rotationVector = new Vector3(0f, 0f, 0f);
 
-    // Image uvRect
-    Rect defaultRect = new Rect(0f, 0f, 1f, 1f);
-    Rect fixedRect = new Rect(0f, 1f, 1f, -1f);
+    // Image flipping uvRect
+    Rect vertDefaultRect = new Rect(1f, 0f, -1f, 1f);
+    Rect vertFixedRect = new Rect(0f, 1f, 1f, -1f);
 
-    // Image Parent's scale
-    Vector3 defaultScale = new Vector3(1f, 1f, 1f);
-    Vector3 fixedScale = new Vector3(-1f, 1f, 1f);
+    // "Camera is initialized" flag
+    bool cameraInitialized = false;
 
-    Color[] framePixels;
+    Color32[] framePixels;
     Texture2D processedTexture;
 
     void Start()
     {
-        // Check for device cameras
-        Debug.Log("Number of cameras found:" + WebCamTexture.devices.Length);
-
-        if (WebCamTexture.devices.Length == 0) {
+        // Make sure we have at least one camera
+        if (WebCamTexture.devices.Length == 0)
+        {
+            Debug.Log ("No camera devices detected.");
             return;
         }
 
-        if (WebCamTexture.devices.Length > 2) {
-            Debug.Log("Only two cameras are supported, using first two cameras as back and front.");
+        // Loop through each camera device
+        for( int i=0 ; i < WebCamTexture.devices.Length; i++ )
+        {
+            // Print info about the camera
+            Debug.Log(
+                "Device " + i + " : \n" +
+                "  - Name: " + WebCamTexture.devices[i].name + "\n" +
+                "  - IsFrontFacing: " + WebCamTexture.devices[i].isFrontFacing.ToString() + "\n" +
+                "  - IsNull: " + WebCamTexture.devices[i].Equals(null)
+            );
+
+            // If the camera is front facing, set it as the active camera
+            if ( WebCamTexture.devices[ i ].isFrontFacing )
+            {
+                SetActiveCamera (i);
+            }
         }
 
-        // Get the device's cameras and create WebCamTextures with them
-        frontCameraDevice = WebCamTexture.devices.Last();
-        backCameraDevice = WebCamTexture.devices.First();
-
-        frontCameraTexture = new WebCamTexture(frontCameraDevice.name, 1280, 720, 30);
-        backCameraTexture = new WebCamTexture(backCameraDevice.name, 1280, 720, 30);
-
-        // Set camera filter modes for a smoother looking image
-        frontCameraTexture.filterMode = FilterMode.Trilinear;
-        backCameraTexture.filterMode = FilterMode.Trilinear;
-
-        // Set which camera to use by default
-        SetActiveCamera(frontCameraTexture);
+        // If no cameras were detected as front facing, just use the first camera.
+        if( activeCameraTexture == null ) { SetActiveCamera ( 0 ); }
     }
-        
-    public void SetActiveCamera(WebCamTexture cameraToUse)
+
+    public void SetActiveCamera( int deviceIndex )
     {
-        if (activeCameraTexture != null) {
-            activeCameraTexture.Stop();
-        }
+        if ( activeCameraTexture != null ) { activeCameraTexture.Stop (); }
 
-        activeCameraTexture = cameraToUse;
-        activeCameraDevice = WebCamTexture.devices.FirstOrDefault(device => device.name == cameraToUse.deviceName);
-
-        webcamRawImage.texture = activeCameraTexture;
-        webcamRawImage.material.mainTexture = activeCameraTexture;
+        activeCameraDevice = WebCamTexture.devices.ElementAt( deviceIndex );
+        activeCameraTexture = new WebCamTexture (
+            WebCamTexture.devices.ElementAt( deviceIndex ).name, // name of device to use as input
+            640, // requested width
+            480,  // requested height
+            30    // requested frames per second (fps)
+        );
 
         activeCameraTexture.Play();
 
-        // since we've switched cameras, we need to reinitialize.
-        cameraInitialized = false;
+        this.cameraInitialized = false;
     }
 
-    // Switches between the device's front and back camera.  If there's only one camera, it's ok.. they will both
-    // be set to the same camera since in the start() function we set them to .first and .last
-    public void SwitchCamera()
+    void FixCameraGeometry()
     {
-        SetActiveCamera(activeCameraTexture.Equals(frontCameraTexture) ? backCameraTexture : frontCameraTexture);
+        // Rotate image to show correct orientation 
+        rotationVector.z = -activeCameraTexture.videoRotationAngle;
+        webCamRawImage.rectTransform.localEulerAngles = rotationVector;
+
+        // Set AspectRatioFitter's ratio
+        float videoRatio = (float)activeCameraTexture.width / (float)activeCameraTexture.height;
+        imageFitter.aspectRatio = videoRatio;
+
+        // Unflip if vertically flipped
+        webCamRawImage.uvRect = activeCameraTexture.videoVerticallyMirrored ? vertFixedRect : vertDefaultRect;
     }
 
     // This function runs on every frame
     void Update()
     {
         // If the camera's resolution is set to < 100, then the camera isn't fully initialized yet, and we
-        // need to do nothing until Unity reports the proper resolution.
-        if (activeCameraTexture.width < 100) {
+        // need to do nothing until Unity reports the proper resolution. This is a Unity bug workaround.
+        if (activeCameraTexture.width < 100){
             Debug.Log("Waiting for camera to initialize...");
             return;
         }
 
         // Once a camera is initialized, this only runs once.
-        if ( ! cameraInitialized ) { 
+        if ( ! this.cameraInitialized ) { 
             
-            cameraInitialized = true;
+            this.cameraInitialized = true;
 
-            // Rotate image to show correct orientation 
-            rotationVector.z = -activeCameraTexture.videoRotationAngle;
-            webcamRawImage.rectTransform.localEulerAngles = rotationVector;
-
-            // Set AspectRatioFitter's ratio
-            float videoRatio = (float)activeCameraTexture.width / (float)activeCameraTexture.height;
-            imageFitter.aspectRatio = videoRatio;
-
-            // Unflip if vertically flipped
-            webcamRawImage.uvRect = activeCameraTexture.videoVerticallyMirrored ? fixedRect : defaultRect;
-
-            // Mirror front-facing camera's image horizontally to look more natural
-            if (activeCameraDevice.isFrontFacing ) {
-                imageParent.localScale = fixedScale;
-            } else {
-                imageParent.localScale = defaultScale;
-            }
-                
             Debug.Log ("Camera is initialized at " + activeCameraTexture.width + "x" + activeCameraTexture.height);
 
-            framePixels = new Color[ activeCameraTexture.width * activeCameraTexture.height ];
+            framePixels = new Color32[ activeCameraTexture.width * activeCameraTexture.height ];
 
             processedTexture = new Texture2D (activeCameraTexture.width, activeCameraTexture.height);
+
+            // Assign our processed data to the rawImage object on the screen.
+            webCamRawImage.texture = processedTexture;
+            webCamRawImage.material.mainTexture = processedTexture;
+
+            // Perform rotation or vertical flipping if necessary
+            FixCameraGeometry ();
         }
-            
+
         // Grab the current frame's pixels
-        framePixels = activeCameraTexture.GetPixels ();
+        framePixels = activeCameraTexture.GetPixels32 ();
+
+        // Loop through every pixel, row (y) and column (x) in the camera frame
+        for (int y = 0; y < 640; y++)
+        {
+            for (int x = 0; x < 480; x++)
+            {
+                framePixels [x * y + x].a = 255;
+                framePixels [x * y + x].r = 60;
+                framePixels [x * y + x].g = 0;
+                framePixels [x * y + x].b = 0;
+            }
+        }
+
+
+        processedTexture.SetPixels32 ( framePixels );
+
+        processedTexture.Apply();
+
+        /*
 
         // Temp variables to hold the hue, saturation, vibrance for a HSVcolor.
         float hOrig, sOrig, vOrig, hChanged, sChanged, vChanged;
         // Temp variables to hold a color in rgb notation
-        Color rgbOrig, rgbChanged;
+        Color rgbPixelOrig, rgbPixelChanged;
 
         // Loop through every pixel, row (y) and column (x) in the camera frame
         for (int y = 0; y < activeCameraTexture.width; y++)
         {
             for (int x = 0; x < activeCameraTexture.height; x++)
             {
+                
                 // Get the originalframePixels is a 1D array instead of 2D, so we have to calculate it's 1D index.
-                rgbOrig = framePixels[(y*x) + x];
+                rgbPixelOrig = framePixels.ElementAt( (y*x) + x );
 
                 // Convert the rgb camera pixel value to HSV for easy comparison to our rules
-                Color.RGBToHSV( rgbOrig, out hOrig, out sOrig, out vOrig );
+                Color.RGBToHSV( rgbPixelOrig, out hOrig, out sOrig, out vOrig );
 
-                // Now we change the color values based on our rules
-                if (hOrig > .5) {
-                    hChanged = 1;
-                } else {
-                    hChanged = hOrig;
-                }
-
-                if (sOrig > .5) {
-                    sChanged = 1;
-                } else {
-                    sChanged = sOrig;
-                }
-
-                if (vOrig > .5) {
-                    vChanged = 1;
-                } else {
-                    vChanged = vOrig;
-                }
 
                 // Take our changed HSV color and convert it back to RGB so the texture can use it
-                rgbChanged = Color.HSVToRGB (hChanged, sChanged, vChanged);
+                rgbPixelChanged = Color.HSVToRGB (hChanged, sChanged, vChanged);
 
                 // Save the pixel into our processed texture
-                processedTexture.SetPixel (x, y, rgbChanged);
+                processedTexture.SetPixel (y, x, rgbPixelChanged);
             }
         }
 
         // Apply the changes to the texture, or else nothing will happen.
         processedTexture.Apply ();
 
-        // Assign our processed data to the rawImage object on the screen.
-        webcamRawImage.texture = processedTexture;
+        */
 
-    }
+    } //END UPDATE()
         
-}
+} //END CLASS

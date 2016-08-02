@@ -11,6 +11,7 @@ public class UiSettingsCanvasController : MonoBehaviour {
     // Use this for initialization
     void Start ()
     {
+        UiWebcamCanvas.enabled = true;
         versionText.text = "FlappyBird v" + Constants.VERSION_STRING ;
     }
 

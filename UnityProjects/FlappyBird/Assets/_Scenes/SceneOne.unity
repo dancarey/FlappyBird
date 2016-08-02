@@ -96,7 +96,6 @@ GameObject:
   - 54: {fileID: 14477177}
   - 198: {fileID: 14477174}
   - 199: {fileID: 14477173}
-  - 114: {fileID: 14477176}
   m_Layer: 0
   m_Name: Sparkler
   m_TagString: Untagged
@@ -1657,18 +1656,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
---- !u!114 &14477176
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 14477172}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4057aa6393ee6b4f90ce656d1e150b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sparkler: {fileID: 14477174}
 --- !u!54 &14477177
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1992,6 +1979,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   UiSettingsCanvas: {fileID: 1504844766}
+  UiDebugCanvas: {fileID: 582269637}
 --- !u!1 &487843856
 GameObject:
   m_ObjectHideFlags: 0
@@ -2321,7 +2309,7 @@ Canvas:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 582269634}
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 2
   m_RenderMode: 0
   m_Camera: {fileID: 0}
@@ -2499,7 +2487,7 @@ GameObject:
   - 114: {fileID: 1032579201}
   - 114: {fileID: 1032579204}
   m_Layer: 5
-  m_Name: WebcamRawImage
+  m_Name: WebCamRawImage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2534,8 +2522,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc2a4a7aa53a6cf4e854cd6c619ca442, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  webcamRawImage: {fileID: 1032579202}
-  imageParent: {fileID: 423876783}
+  webCamRawImage: {fileID: 1032579202}
   imageFitter: {fileID: 1032579204}
 --- !u!114 &1032579202
 MonoBehaviour:
@@ -2550,7 +2537,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -3033,7 +3020,7 @@ GameObject:
   - 114: {fileID: 1395680670}
   - 114: {fileID: 1395680669}
   m_Layer: 5
-  m_Name: UiWebcamCanvas
+  m_Name: UiWebCamCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
