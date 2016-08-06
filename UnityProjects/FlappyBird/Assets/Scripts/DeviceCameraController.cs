@@ -93,7 +93,9 @@ public class DeviceCameraController : MonoBehaviour
         webCamRawImage.uvRect = activeCameraTexture.videoVerticallyMirrored ? vertFixedRect : vertDefaultRect;
     }
 
-    // This function runs on every frame
+    //---------------------------------------------------------------------
+    // Update -  function will run on every camera frame
+    //---------------------------------------------------------------------
     void Update()
     {
         // If we never got a camera to work with, don't do anything.
@@ -134,62 +136,92 @@ public class DeviceCameraController : MonoBehaviour
         // Pull the current camera frame's pixels into the our editable pixel array
         framePixels = activeCameraTexture.GetPixels32();
 
+
+        // Temp variables to hold the hue, saturation, vibrance for a HSVcolor.
+        float hOrig, sOrig, vOrig, hNew, sNew, vNew;
+
         // Loop through every pixel in the camera frame.
         // y is for each row, x is for each pixel on that row
         for (int y = 0; y < activeCameraTexture.height; y++)
         {
             for (int x = 0; x < activeCameraTexture.width; x++)
             {
-                // convert the x/y variables to find the pixel's index in the array
-                pixNdx = (y * activeCameraTexture.width) + x ;
+                // Find the pixel's index in the array
+                pixNdx = xyToIndex (x, y, activeCameraTexture.width);
 
-                // set our new color to that pixel
-                framePixels [pixNdx] = new Color32 (
-                    (byte)Mathf.Min ( framePixels [pixNdx].r + 80, 255 ), //red
-                    (byte)Mathf.Min ( framePixels [pixNdx].g, 255 ), //green
-                    (byte)Mathf.Min ( framePixels [pixNdx].b, 255 ), //blue
-                    255 // alpha transparency
-                );
+                // Convert the RGB values to HSV
+                Color.RGBToHSV( framePixels [pixNdx], out hOrig, out sOrig, out vOrig );
+
+                // ****** BEGIN MODIFYING HSV VALUES  ****** //
+
+                // Hue window
+                float hCeil = 0.6f;
+                float hFloor = 0.4f;
+
+                // Saturation window
+                float sCeil = 0.6f;
+                float sFloor = 0.4f;
+
+                // Valence window
+                float vCeil = 0.6f;
+                float vFloor = 0.4f;
+
+                // Adjust Hue (color wheel)
+                if (hOrig < hFloor || hOrig > hCeil)
+                {
+                    hNew = hOrig;
+                } else {
+                    hNew = hOrig;
+                }
+
+                // Adjust Saturation (color intensity)
+                if ( sOrig < sFloor || sOrig > sCeil )
+                {
+                    sNew = 0.0f;
+                } else {
+                    sNew = sOrig;
+                }
+
+                // Adjust Valence (whiteness)
+                if ( vOrig < vFloor || vOrig > vCeil )
+                {
+                    vNew = 0.0f;
+                } else {
+                    vNew = vOrig;
+                }
+
+                // ****** END MODIFYING HSV VALUES ****** //
+
+                // Take our changed HSV color and convert it back to RGB so the texture can use it
+                framePixels [pixNdx] = Color.HSVToRGB (hNew, sNew, vNew);
             }
         }
 
         // Push the modified pixels out to the processed texture
         processedTexture.SetPixels32 ( framePixels );
 
-        // Apply, or else nothing will change.
-        processedTexture.Apply();
-
-        /*
-        // Temp variables to hold the hue, saturation, vibrance for a HSVcolor.
-        float hOrig, sOrig, vOrig, hChanged, sChanged, vChanged;
-        // Temp variables to hold a color in rgb notation
-        Color rgbPixelOrig, rgbPixelChanged;
-
-        // Loop through every pixel, row (y) and column (x) in the camera frame
-        for (int y = 0; y < activeCameraTexture.width; y++)
-        {
-            for (int x = 0; x < activeCameraTexture.height; x++)
-            {
-                
-                // Get the originalframePixels is a 1D array instead of 2D, so we have to calculate it's 1D index.
-                rgbPixelOrig = framePixels.ElementAt( (y*x) + x );
-
-                // Convert the rgb camera pixel value to HSV for easy comparison to our rules
-                Color.RGBToHSV( rgbPixelOrig, out hOrig, out sOrig, out vOrig );
-
-
-                // Take our changed HSV color and convert it back to RGB so the texture can use it
-                rgbPixelChanged = Color.HSVToRGB (hChanged, sChanged, vChanged);
-
-                // Save the pixel into our processed texture
-                processedTexture.SetPixel (y, x, rgbPixelChanged);
-            }
-        }
-
         // Apply the changes to the texture, or else nothing will happen.
         processedTexture.Apply ();
-        */
 
-    } //END UPDATE()
+    } //END Update()
+
+    //---------------------------------------------------------------------
+    // Returns the index to an array ordered in rows.
+    //---------------------------------------------------------------------
+    private int xyToIndex( int x, int y, int width)
+    {
+        return (y * width) + x;
+    } //END xyToIndex()
+
+
+    //---------------------------------------------------------------------
+    // Converts an index for an array ordered in rows, to x/y coords.
+    //---------------------------------------------------------------------
+    private void indexToXY( int index, int width, out int x, out int y)
+    {
+        x = Mathf.FloorToInt (index / width);
+        y = index % width;
+
+    } //END indexToXY()
         
 } //END CLASS
