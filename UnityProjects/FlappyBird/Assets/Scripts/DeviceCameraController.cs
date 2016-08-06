@@ -29,7 +29,20 @@ public class DeviceCameraController : MonoBehaviour
     Texture2D processedTexture;
     // Temp variable to hold current pixel's index in image processing loop
     int pixNdx;
+    // Temp variables to hold the hue, saturation, vibrance for a HSVcolor.
+    float hOrig, sOrig, vOrig, hNew, sNew, vNew;
 
+    // Hue window
+    float hCeil = 0.6f;
+    float hFloor = 0.4f;
+
+    // Saturation window
+    float sCeil = 0.6f;
+    float sFloor = 0.4f;
+
+    // Valence window
+    float vCeil = 0.6f;
+    float vFloor = 0.4f;
 
     void Start()
     {
@@ -136,10 +149,6 @@ public class DeviceCameraController : MonoBehaviour
         // Pull the current camera frame's pixels into the our editable pixel array
         framePixels = activeCameraTexture.GetPixels32();
 
-
-        // Temp variables to hold the hue, saturation, vibrance for a HSVcolor.
-        float hOrig, sOrig, vOrig, hNew, sNew, vNew;
-
         // Loop through every pixel in the camera frame.
         // y is for each row, x is for each pixel on that row
         for (int y = 0; y < activeCameraTexture.height; y++)
@@ -153,18 +162,6 @@ public class DeviceCameraController : MonoBehaviour
                 Color.RGBToHSV( framePixels [pixNdx], out hOrig, out sOrig, out vOrig );
 
                 // ****** BEGIN MODIFYING HSV VALUES  ****** //
-
-                // Hue window
-                float hCeil = 0.6f;
-                float hFloor = 0.4f;
-
-                // Saturation window
-                float sCeil = 0.6f;
-                float sFloor = 0.4f;
-
-                // Valence window
-                float vCeil = 0.6f;
-                float vFloor = 0.4f;
 
                 // Adjust Hue (color wheel)
                 if (hOrig < hFloor || hOrig > hCeil)
