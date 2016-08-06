@@ -23,8 +23,13 @@ public class DeviceCameraController : MonoBehaviour
     // "Camera is initialized" flag
     bool cameraInitialized = false;
 
+    // Holds the current frame's pixels as we manipulate them
     Color32[] framePixels;
+    // Texture that recieves the final processed form of the frame
     Texture2D processedTexture;
+    // Temp variable to hold current pixel's index in image processing loop
+    int pixNdx;
+
 
     void Start()
     {
@@ -91,25 +96,30 @@ public class DeviceCameraController : MonoBehaviour
     // This function runs on every frame
     void Update()
     {
-        // If the camera's resolution is set to < 100, then the camera isn't fully initialized yet, and we
-        // need to do nothing until Unity reports the proper resolution. This is a Unity bug workaround.
-        if (activeCameraTexture.width < 100){
-            Debug.Log("Waiting for camera to initialize...");
+        // If we never got a camera to work with, don't do anything.
+        if (activeCameraTexture == null) {
             return;
         }
 
-        // Once a camera is initialized, this only runs once.
-        if ( ! this.cameraInitialized ) { 
+        // If the camera's resolution is set to < 100, then the camera isn't fully initialized yet, and we
+        // need to do nothing until Unity reports the proper resolution. It might take a few seconds
+        // before Unity reports the correct resolution.
+        if (activeCameraTexture.width < 100) {
+            Debug.Log ("Waiting for camera to initialize...");
+            return;
+        }
+
+        // When a camera is initialized, this only runs once.
+        if (!this.cameraInitialized) { 
             
             this.cameraInitialized = true;
 
             Debug.Log ("Camera is initialized at " + activeCameraTexture.width + "x" + activeCameraTexture.height);
 
-            framePixels = new Color32[ activeCameraTexture.width * activeCameraTexture.height ];
+            // assign our processed texture variable a new texture, with the camera pixel dimensions
+            processedTexture = new Texture2D( activeCameraTexture.width, activeCameraTexture.height );
 
-            processedTexture = new Texture2D (activeCameraTexture.width, activeCameraTexture.height);
-
-            // Assign our processed data to the rawImage object on the screen.
+            // Assign our processed texture to the rawImage object on the screen.
             webCamRawImage.texture = processedTexture;
             webCamRawImage.material.mainTexture = processedTexture;
 
@@ -117,28 +127,39 @@ public class DeviceCameraController : MonoBehaviour
             FixCameraGeometry ();
         }
 
-        // Grab the current frame's pixels
-        framePixels = activeCameraTexture.GetPixels32 ();
+        //---------------------------------------------------------------------
+        // The below code will run on every camera frame
+        //---------------------------------------------------------------------
 
-        // Loop through every pixel, row (y) and column (x) in the camera frame
-        for (int y = 0; y < 640; y++)
+        // Pull the current camera frame's pixels into the our editable pixel array
+        framePixels = activeCameraTexture.GetPixels32();
+
+        // Loop through every pixel in the camera frame.
+        // y is for each row, x is for each pixel on that row
+        for (int y = 0; y < activeCameraTexture.height; y++)
         {
-            for (int x = 0; x < 480; x++)
+            for (int x = 0; x < activeCameraTexture.width; x++)
             {
-                framePixels [x * y + x].a = 255;
-                framePixels [x * y + x].r = 60;
-                framePixels [x * y + x].g = 0;
-                framePixels [x * y + x].b = 0;
+                // convert the x/y variables to find the pixel's index in the array
+                pixNdx = (y * activeCameraTexture.width) + x ;
+
+                // set our new color to that pixel
+                framePixels [pixNdx] = new Color32 (
+                    (byte)Mathf.Min ( framePixels [pixNdx].r + 80, 255 ), //red
+                    (byte)Mathf.Min ( framePixels [pixNdx].g, 255 ), //green
+                    (byte)Mathf.Min ( framePixels [pixNdx].b, 255 ), //blue
+                    255 // alpha transparency
+                );
             }
         }
 
-
+        // Push the modified pixels out to the processed texture
         processedTexture.SetPixels32 ( framePixels );
 
+        // Apply, or else nothing will change.
         processedTexture.Apply();
 
         /*
-
         // Temp variables to hold the hue, saturation, vibrance for a HSVcolor.
         float hOrig, sOrig, vOrig, hChanged, sChanged, vChanged;
         // Temp variables to hold a color in rgb notation
@@ -167,7 +188,6 @@ public class DeviceCameraController : MonoBehaviour
 
         // Apply the changes to the texture, or else nothing will happen.
         processedTexture.Apply ();
-
         */
 
     } //END UPDATE()
