@@ -33,16 +33,16 @@ public class DeviceCameraController : MonoBehaviour
     float hOrig, sOrig, vOrig, hNew, sNew, vNew;
 
     // Hue window
-    float hCeil = 0.6f;
-    float hFloor = 0.4f;
+    public float hMax = 0.6f;
+    public float hMin = 0.4f;
 
     // Saturation window
-    float sCeil = 0.6f;
-    float sFloor = 0.4f;
+    public float sMax = 0.6f;
+    public float sMin = 0.4f;
 
     // Valence window
-    float vCeil = 0.6f;
-    float vFloor = 0.4f;
+    public float vMax = 0.6f;
+    public float vMin = 0.4f;
 
     void Start()
     {
@@ -164,7 +164,7 @@ public class DeviceCameraController : MonoBehaviour
                 // ****** BEGIN MODIFYING HSV VALUES  ****** //
 
                 // Adjust Hue (color wheel)
-                if (hOrig < hFloor || hOrig > hCeil)
+                if (hOrig < hMin || hOrig > hMax)
                 {
                     hNew = hOrig;
                 } else {
@@ -172,7 +172,7 @@ public class DeviceCameraController : MonoBehaviour
                 }
 
                 // Adjust Saturation (color intensity)
-                if ( sOrig < sFloor || sOrig > sCeil )
+                if ( sOrig < sMin || sOrig > sMax )
                 {
                     sNew = 0.0f;
                 } else {
@@ -180,7 +180,7 @@ public class DeviceCameraController : MonoBehaviour
                 }
 
                 // Adjust Valence (whiteness)
-                if ( vOrig < vFloor || vOrig > vCeil )
+                if ( vOrig < vMin || vOrig > vMax )
                 {
                     vNew = 0.0f;
                 } else {
