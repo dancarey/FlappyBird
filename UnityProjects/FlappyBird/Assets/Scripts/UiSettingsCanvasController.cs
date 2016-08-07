@@ -7,6 +7,7 @@ public class UiSettingsCanvasController : MonoBehaviour {
     public Text versionText ;
     public Canvas UiDebugCanvas ;
     public Canvas UiWebcamCanvas ;
+    public Canvas UiCalibrationCanvas ;
 
     // Use this for initialization
     void Start ()
@@ -18,6 +19,7 @@ public class UiSettingsCanvasController : MonoBehaviour {
     public void ToggleCalibration ()
     {
         UiWebcamCanvas.enabled = ! UiWebcamCanvas.enabled ;
+        UiCalibrationCanvas.enabled = ! UiCalibrationCanvas.enabled;
     }
 
     public void ToggleDebug ()

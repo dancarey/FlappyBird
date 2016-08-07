@@ -13,68 +13,87 @@ public class CalibrationCanvasController : MonoBehaviour {
     public Slider valMinSlider;
     public Slider valMaxSlider;
 
-	// Use this for initialization
-	void Start () {
-	
+
+	void Start ()
+    {
+	    // Set defaults for all slider values
+        hueMinSlider.value = 0.1f;
+        hueMaxSlider.value = 0.9f;
+
+        satMinSlider.value = 0.1f;
+        satMaxSlider.value = 0.9f;
+
+        valMinSlider.value = 0.1f;
+        valMaxSlider.value = 0.9f;
 	}
 	
     // -----------------------------------------------------------------
+
     // Check overruns for HUE slider
-    void OnHueMinSliderChange(float newVal)
+    public void OnHueMinSliderChange()
     {
         // Make sure we're not over the max slider's value.
-        if( newVal > hueMaxSlider.value )
+        if( hueMinSlider.value > hueMaxSlider.value )
         {
             hueMinSlider.value = hueMaxSlider.value;
         }
+        //Debug.Log ("Hue minimum changed to " + hueMinSlider.value);
     }
 
-    void OnHueMaxSliderChange(float newVal)
+    public void OnHueMaxSliderChange()
     {
         // Make sure we're not over the max slider's value.
-        if( newVal < hueMinSlider.value )
+        if( hueMaxSlider.value < hueMinSlider.value )
         {
             hueMaxSlider.value = hueMinSlider.value;
         }
+        //Debug.Log ("Hue maximum changed to " + hueMaxSlider.value);
     }
 
     // -----------------------------------------------------------------
+
     // Check overruns for SATURATION slider
-    void OnSatMinSliderChange(float newVal)
+    public void OnSatMinSliderChange()
     {
         // Make sure we're not over the max slider's value.
-        if( newVal > satMaxSlider.value )
+        if( satMinSlider.value  > satMaxSlider.value )
         {
             satMinSlider.value = satMaxSlider.value;
         }
+        //Debug.Log ("Saturation minimum changed to " + satMinSlider.value);
     }
 
-    void OnSatMaxSliderChange(float newVal)
+    public void OnSatMaxSliderChange()
     {
         // Make sure we're not over the max slider's value.
-        if( newVal < satMinSlider.value )
+        if( satMaxSlider.value  < satMinSlider.value )
         {
             satMaxSlider.value = satMinSlider.value;
         }
+        //Debug.Log ("Saturation maximum changed to " + satMaxSlider.value);
     }
 
     // -----------------------------------------------------------------
+
     // Check overruns for HUE slider
-    void OnValMinSliderChange(float newVal)
+    public void OnValMinSliderChange()
     {
         // Make sure we're not over the max slider's value.
-        if( newVal > valMaxSlider.value )
+        if( valMinSlider.value  > valMaxSlider.value )
         {
             valMinSlider.value = valMaxSlider.value;
         }
+        //Debug.Log ("Value minimum changed to " + valMinSlider.value);
     }
 
-    void OnValMaxSliderChange(float newVal)
+    public void OnValMaxSliderChange()
     {
         // Make sure we're not over the max slider's value.
-        if( newVal < valMinSlider.value )
+        if( valMaxSlider.value  < valMinSlider.value )
         {
             valMaxSlider.value = valMinSlider.value;
         }
+        //Debug.Log ("Value maximum changed to " + valMaxSlider.value);
     }
+        
 }

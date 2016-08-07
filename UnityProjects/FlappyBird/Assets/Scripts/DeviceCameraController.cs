@@ -32,17 +32,15 @@ public class DeviceCameraController : MonoBehaviour
     // Temp variables to hold the hue, saturation, vibrance for a HSVcolor.
     float hOrig, sOrig, vOrig, hNew, sNew, vNew;
 
-    // Hue window
-    public float hMax = 0.6f;
-    public float hMin = 0.4f;
+    // Sliders
+    public Slider hueMinSlider;
+    public Slider hueMaxSlider;
 
-    // Saturation window
-    public float sMax = 0.6f;
-    public float sMin = 0.4f;
+    public Slider satMinSlider;
+    public Slider satMaxSlider;
 
-    // Valence window
-    public float vMax = 0.6f;
-    public float vMin = 0.4f;
+    public Slider valMinSlider;
+    public Slider valMaxSlider;
 
     void Start()
     {
@@ -163,28 +161,18 @@ public class DeviceCameraController : MonoBehaviour
 
                 // ****** BEGIN MODIFYING HSV VALUES  ****** //
 
-                // Adjust Hue (color wheel)
-                if (hOrig < hMin || hOrig > hMax)
-                {
+                // If the pixel's hue, saturation or 
+                if (( hueMinSlider.value <= hOrig && hOrig <= hueMaxSlider.value ) &&
+                    ( satMinSlider.value <= sOrig && sOrig <= satMaxSlider.value ) &&
+                    (valMinSlider.value <= vOrig && vOrig <= valMaxSlider.value)
+                ){
                     hNew = hOrig;
-                } else {
-                    hNew = hOrig;
-                }
-
-                // Adjust Saturation (color intensity)
-                if ( sOrig < sMin || sOrig > sMax )
-                {
-                    sNew = 0.0f;
-                } else {
                     sNew = sOrig;
-                }
-
-                // Adjust Valence (whiteness)
-                if ( vOrig < vMin || vOrig > vMax )
-                {
-                    vNew = 0.0f;
-                } else {
                     vNew = vOrig;
+                } else {
+                    hNew = 0.0f;
+                    sNew = 0.0f;
+                    vNew = 0.0f;
                 }
 
                 // ****** END MODIFYING HSV VALUES ****** //
