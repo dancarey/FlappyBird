@@ -17,14 +17,14 @@ public class CalibrationCanvasController : MonoBehaviour {
 	void Start ()
     {
 	    // Set defaults for all slider values
-        hueMinSlider.value = 0.1f;
-        hueMaxSlider.value = 0.9f;
+        hueMinSlider.value = 0.0f;
+        hueMaxSlider.value = 1.0f;
 
-        satMinSlider.value = 0.1f;
-        satMaxSlider.value = 0.9f;
+        satMinSlider.value = 0.0f;
+        satMaxSlider.value = 1.0f;
 
-        valMinSlider.value = 0.1f;
-        valMaxSlider.value = 0.9f;
+        valMinSlider.value = 0.0f;
+        valMaxSlider.value = 1.0f;
 	}
 	
     // -----------------------------------------------------------------

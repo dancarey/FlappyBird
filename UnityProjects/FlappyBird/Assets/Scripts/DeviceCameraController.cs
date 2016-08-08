@@ -5,9 +5,13 @@ using System.Collections;
 
 public class DeviceCameraController : MonoBehaviour
 {
+    public Camera mainCamera;
+
     // Items linked to scene objects
     public RawImage webCamRawImage;
     public AspectRatioFitter imageFitter;
+
+    public Canvas UiCalibrationCanvas;
 
     // Currently active camera device and texture
     WebCamDevice activeCameraDevice;
@@ -25,14 +29,17 @@ public class DeviceCameraController : MonoBehaviour
 
     // Holds the current frame's pixels as we manipulate them
     Color32[] framePixels;
+
     // Texture that recieves the final processed form of the frame
     Texture2D processedTexture;
+
     // Temp variable to hold current pixel's index in image processing loop
     int pixNdx;
-    // Temp variables to hold the hue, saturation, vibrance for a HSVcolor.
-    float hOrig, sOrig, vOrig, hNew, sNew, vNew;
 
-    // Sliders
+    // Temp variables to hold the hue, saturation, vibrance for a HSVcolor.
+    float pixHue, pixSat, pixVal;
+
+    // Sliders in the UI
     public Slider hueMinSlider;
     public Slider hueMaxSlider;
 
@@ -41,6 +48,17 @@ public class DeviceCameraController : MonoBehaviour
 
     public Slider valMinSlider;
     public Slider valMaxSlider;
+
+    // Temp vars for finding average location of matched pixels
+    int pixMatchCount, xCoordTotal, yCoordTotal ;
+
+    float xCamCoordAvg, yCamCoordAvg;
+
+    public GameObject sparkler;
+
+    float screenPixCoordX, screenPixCoordY;
+
+    float screenRatioX, screenRatioY;
 
     void Start()
     {
@@ -130,7 +148,7 @@ public class DeviceCameraController : MonoBehaviour
             Debug.Log ("Camera is initialized at " + activeCameraTexture.width + "x" + activeCameraTexture.height);
 
             // assign our processed texture variable a new texture, with the camera pixel dimensions
-            processedTexture = new Texture2D( activeCameraTexture.width, activeCameraTexture.height );
+            processedTexture = new Texture2D (activeCameraTexture.width, activeCameraTexture.height);
 
             // Assign our processed texture to the rawImage object on the screen.
             webCamRawImage.texture = processedTexture;
@@ -139,13 +157,23 @@ public class DeviceCameraController : MonoBehaviour
             // Perform rotation or vertical flipping if necessary
             FixCameraGeometry ();
         }
+            
 
         //---------------------------------------------------------------------
         // The below code will run on every camera frame
         //---------------------------------------------------------------------
 
+        // Reset vars for finding average location of matched pixels
+        xCoordTotal = 1;
+        xCamCoordAvg = 1;
+
+        yCoordTotal = 1;
+        yCamCoordAvg = 1;
+
+        pixMatchCount = 1;
+
         // Pull the current camera frame's pixels into the our editable pixel array
-        framePixels = activeCameraTexture.GetPixels32();
+        framePixels = activeCameraTexture.GetPixels32 ();
 
         // Loop through every pixel in the camera frame.
         // y is for each row, x is for each pixel on that row
@@ -157,36 +185,60 @@ public class DeviceCameraController : MonoBehaviour
                 pixNdx = xyToIndex (x, y, activeCameraTexture.width);
 
                 // Convert the RGB values to HSV
-                Color.RGBToHSV( framePixels [pixNdx], out hOrig, out sOrig, out vOrig );
+                Color.RGBToHSV (framePixels [pixNdx], out pixHue, out pixSat, out pixVal);
 
                 // ****** BEGIN MODIFYING HSV VALUES  ****** //
 
-                // If the pixel's hue, saturation or 
-                if (( hueMinSlider.value <= hOrig && hOrig <= hueMaxSlider.value ) &&
-                    ( satMinSlider.value <= sOrig && sOrig <= satMaxSlider.value ) &&
-                    (valMinSlider.value <= vOrig && vOrig <= valMaxSlider.value)
-                ){
-                    hNew = hOrig;
-                    sNew = sOrig;
-                    vNew = vOrig;
+                // If the pixel's hue, saturation or value is within our sliders,
+                // then we have a match.
+                if ((hueMinSlider.value <= pixHue && pixHue <= hueMaxSlider.value) &&
+                    (satMinSlider.value <= pixSat && pixSat <= satMaxSlider.value) &&
+                    (valMinSlider.value <= pixVal && pixVal <= valMaxSlider.value)) {
+
+                    // Accumulate the x and y totals so we can average them later.
+                    pixMatchCount++;
+                    xCoordTotal += x;
+                    yCoordTotal += y;
+
                 } else {
-                    hNew = 0.0f;
-                    sNew = 0.0f;
-                    vNew = 0.0f;
+                    // Modify the pixel's value (lightness) so that it looks black
+                    pixVal = 0.0f;
                 }
 
                 // ****** END MODIFYING HSV VALUES ****** //
 
-                // Take our changed HSV color and convert it back to RGB so the texture can use it
-                framePixels [pixNdx] = Color.HSVToRGB (hNew, sNew, vNew);
+                // Take our HSV pixel and convert it back to RGB so the texture can use it
+                framePixels [pixNdx] = Color.HSVToRGB (pixHue, pixSat, pixVal);
             }
         }
 
-        // Push the modified pixels out to the processed texture
-        processedTexture.SetPixels32 ( framePixels );
+        // Find the average location of valid pixels in our camera texture frame
+        xCamCoordAvg = xCoordTotal / pixMatchCount;
+        yCamCoordAvg = yCoordTotal / pixMatchCount;
 
-        // Apply the changes to the texture, or else nothing will happen.
-        processedTexture.Apply ();
+        // Calculate current scene camera bounds in scene units at z=0
+        float screenAspect = (float)Screen.width / (float)Screen.height;
+        float cameraHeight = mainCamera.orthographicSize * 2;
+        Bounds bounds = new Bounds( mainCamera.transform.position, new Vector3(cameraHeight * screenAspect, cameraHeight, 0));
+
+        float xOrthoUnitCoord = xCamCoordAvg * ( bounds.size.x  / (float)activeCameraTexture.width );
+        float xOrthoUnitFinal = bounds.min.x + xOrthoUnitCoord;
+
+        float yOrthoUnitCoord = yCamCoordAvg * ( bounds.size.y  / (float)activeCameraTexture.height );
+        float yOrthoUnitFinal = bounds.min.y + yOrthoUnitCoord; //MINUS???
+
+        // Move Sparkler by calculating screen coordinate conversion, to go from camera coords to screen coords
+        sparkler.gameObject.transform.position = new Vector3( -xOrthoUnitFinal, yOrthoUnitFinal, 0);
+
+        // If the calibration canvas is enabled, then we need to push everything back to a viewable texture
+        if ( UiCalibrationCanvas.enabled )
+        {
+            // Push the modified pixels out to the processed texture
+            processedTexture.SetPixels32 ( framePixels );
+
+            // Apply the changes to the texture, or else nothing will happen.
+            processedTexture.Apply ();
+        }
 
     } //END Update()
 
@@ -196,7 +248,7 @@ public class DeviceCameraController : MonoBehaviour
     private int xyToIndex( int x, int y, int width)
     {
         return (y * width) + x;
-    } //END xyToIndex()
+    }
 
 
     //---------------------------------------------------------------------
@@ -206,7 +258,6 @@ public class DeviceCameraController : MonoBehaviour
     {
         x = Mathf.FloorToInt (index / width);
         y = index % width;
-
-    } //END indexToXY()
+    }
         
 } //END CLASS
